@@ -1,0 +1,17 @@
+{
+    "name": "timeline-js",
+    "version": "1.0.0",
+    "main": "index.js",
+    "author": "Davide Specchia <dnl.s.1992@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@types/node": "^6.0.110",
+        "jest": "^22.4.3",
+        "ts-jest": "^22.4.6",
+        "tslint": "^5.10.0",
+        "typescript": "^2.8.3"
+    }
+}
