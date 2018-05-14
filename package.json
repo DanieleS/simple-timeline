@@ -1,6 +1,6 @@
 {
     "name": "timeline-js",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "index.js",
     "author": "Davide Specchia <dnl.s.1992@gmail.com>",
     "license": "MIT",
