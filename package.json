@@ -5,7 +5,7 @@
     "author": "Davide Specchia <dnl.s.1992@gmail.com>",
     "license": "MIT",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc && node ./scripts/copy-package"
     },
     "devDependencies": {
         "@types/d3-interpolate": "^1.1.6",
