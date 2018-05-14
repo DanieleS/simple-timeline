@@ -57,7 +57,7 @@ export class Timeline {
 
     private getNextFrameWithValue(value: string, startIndex: number): IKeyframe {
         for (let i = startIndex; i < this.keyframes.length; i++) {
-            if (this.keyframes[i].value[value]) {
+            if (typeof this.keyframes[i].value[value] !== "undefined") {
                 return this.keyframes[i];
             }
         }
@@ -65,8 +65,8 @@ export class Timeline {
     }
 
     private getPrevFrameWithValue(value: string, startIndex: number): IKeyframe {
-        for (let i = startIndex; i > 0; i--) {
-            if (this.keyframes[i].value[value]) {
+        for (let i = startIndex; i >= 0; i--) {
+            if (typeof this.keyframes[i].value[value] !== "undefined") {
                 return this.keyframes[i];
             }
         }

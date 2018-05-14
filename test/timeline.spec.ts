@@ -16,20 +16,18 @@ const incompleteKeyframes = [{
     }
 },
 {
-    time: 0.2, value: {
-        n: 0
+    time: 0.25, value: {
+        k: 0
     }
 },
 {
-    time: 0.5, value: {
-        n: 0,
+    time: 0.75, value: {
         k: 1
     }
 },
 {
     time: 1, value: {
         n: 1,
-        k: 2
     }
 }];
 
@@ -68,8 +66,8 @@ describe("Timeline", () => {
         test("should get the complete keyframe even if the privided ones misses some value", () => {
             const timeline = new Timeline(incompleteKeyframes);
 
-            expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0, k: 1 } });
-            expect(timeline.getAt(0.75)).toEqual({ time: 0.75, value: { n: 0.5, k: 1.5 } });
+            expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0, k: 0 } });
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5, k: 0.5 } });
         });
     });
 });
