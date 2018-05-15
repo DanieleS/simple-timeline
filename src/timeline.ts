@@ -7,6 +7,7 @@ export class Timeline {
     constructor(
         private keyframes: IKeyframe[],
         private easingFunction: (x: number) => number = (x) => x) {
+        this.keyframes.sort(this.keyframeComparer);
         this.fullKeyframes = this.getFullKeyframes();
     }
 
@@ -15,6 +16,10 @@ export class Timeline {
         const [k1, k2] = this.getKeyframesCouple(perc);
         const finalPerc = this.normalizePerc(perc, k1.time, k2.time);
         return d3.interpolate(k1, k2)(this.easingFunction(finalPerc));
+    }
+
+    private keyframeComparer(k1: IKeyframe, k2: IKeyframe) {
+        return k1.time - k2.time;
     }
 
     private getKeyframesCouple(perc: number) {
@@ -32,11 +37,18 @@ export class Timeline {
     }
 
     private getFullKeyframes() {
-        const objValues = this.getAllValues();
-        return this.keyframes.map((keyframe, i) => {
+        const tempKeyframes = [...this.keyframes];
+        const objValues = this.getAllValues(tempKeyframes);
+        if (tempKeyframes[0].time !== 0) {
+            tempKeyframes.unshift({ time: 0, value: {} });
+        }
+        if (tempKeyframes[tempKeyframes.length - 1].time !== 1) {
+            tempKeyframes.push({ time: 1, value: {} });
+        }
+        return tempKeyframes.map((keyframe, i) => {
             const missingValues = this.getValuesDiff(Object.keys(keyframe.value), objValues);
-            const nextValues = missingValues.map((v) => this.getNextFrameWithValue(v, i));
-            const prevValues = missingValues.map((v) => this.getPrevFrameWithValue(v, i));
+            const nextValues = missingValues.map((v) => this.getNextFrameWithValue(v, i, tempKeyframes));
+            const prevValues = missingValues.map((v) => this.getPrevFrameWithValue(v, i, tempKeyframes));
             for (let j = 0; j < missingValues.length; j++) {
                 const value = missingValues[j];
                 keyframe.value[value] =
@@ -46,8 +58,8 @@ export class Timeline {
         });
     }
 
-    private getAllValues() {
-        const fullValueObj = this.keyframes.reduce((acc, elem) => Object.assign({}, acc, elem.value), {});
+    private getAllValues(keyframes: IKeyframe[]) {
+        const fullValueObj = keyframes.reduce((acc, elem) => Object.assign({}, acc, elem.value), {});
         return Object.keys(fullValueObj);
     }
 
@@ -55,22 +67,22 @@ export class Timeline {
         return target.filter((v) => values.indexOf(v) < 0);
     }
 
-    private getNextFrameWithValue(value: string, startIndex: number): IKeyframe {
-        for (let i = startIndex; i < this.keyframes.length; i++) {
-            if (typeof this.keyframes[i].value[value] !== "undefined") {
-                return this.keyframes[i];
+    private getNextFrameWithValue(value: string, startIndex: number, keyframes: IKeyframe[]): IKeyframe {
+        for (let i = startIndex; i < keyframes.length; i++) {
+            if (typeof keyframes[i].value[value] !== "undefined") {
+                return keyframes[i];
             }
         }
-        return this.getPrevFrameWithValue(value, startIndex);
+        return this.getPrevFrameWithValue(value, startIndex, keyframes);
     }
 
-    private getPrevFrameWithValue(value: string, startIndex: number): IKeyframe {
+    private getPrevFrameWithValue(value: string, startIndex: number, keyframes: IKeyframe[]): IKeyframe {
         for (let i = startIndex; i >= 0; i--) {
-            if (typeof this.keyframes[i].value[value] !== "undefined") {
-                return this.keyframes[i];
+            if (typeof keyframes[i].value[value] !== "undefined") {
+                return keyframes[i];
             }
         }
-        return this.getNextFrameWithValue(value, startIndex);
+        return this.getNextFrameWithValue(value, startIndex, keyframes);
     }
 
     private interpolateValues(from: IKeyframe, to: IKeyframe, time: number, value: string): number | string {

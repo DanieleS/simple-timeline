@@ -31,6 +31,36 @@ const incompleteKeyframes = [{
     }
 }];
 
+const notFullKeyframes = [
+    {
+        time: 0.2,
+        value: {
+            n: 1
+        }
+    },
+    {
+        time: 0.8,
+        value: {
+            n: 0
+        }
+    }
+];
+
+const wrongOrderKeyframes = [
+    {
+        time: 1,
+        value: {
+            n: 1
+        }
+    },
+    {
+        time: 0,
+        value: {
+            n: 0
+        }
+    }
+];
+
 describe("Timeline", () => {
     describe("getAt", () => {
         test("should get the right interpolated keyframe at given time", () => {
@@ -63,11 +93,26 @@ describe("Timeline", () => {
             expect(mockEasing).toHaveBeenCalledTimes(1);
         });
 
-        test("should get the complete keyframe even if the privided ones misses some value", () => {
+        test("should get the complete keyframe even if the provided ones misses some value", () => {
             const timeline = new Timeline(incompleteKeyframes);
 
             expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0, k: 0 } });
             expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5, k: 0.5 } });
+        });
+
+        test("should get the keyframe even if the privided ones don't cover the full range", () => {
+            const timeline = new Timeline(notFullKeyframes);
+
+            expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 1 } });
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5 } });
+            expect(timeline.getAt(1)).toEqual({ time: 1, value: { n: 0 } });
+        });
+
+        test("should get the keyframe in the right order", () => {
+            const timeline = new Timeline(wrongOrderKeyframes);
+
+            expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0 } });
+            expect(timeline.getAt(1)).toEqual({ time: 1, value: { n: 1 } });
         });
     });
 });
