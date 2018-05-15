@@ -62,6 +62,13 @@ const wrongOrderKeyframes = [
 ];
 
 describe("Timeline", () => {
+    describe("constructor", () => {
+        test("should be inited with at least 1 keyframe", () => {
+            expect(() => new Timeline([])).toThrowError("You should provide at least 1 keyframe");
+            expect(() => new Timeline([{ time: 0, value: {} }])).not.toThrow();
+        });
+    });
+
     describe("getAt", () => {
         test("should get the right interpolated keyframe at given time", () => {
             const timeline = new Timeline(keyframeCouple);
@@ -113,6 +120,30 @@ describe("Timeline", () => {
 
             expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0 } });
             expect(timeline.getAt(1)).toEqual({ time: 1, value: { n: 1 } });
+        });
+    });
+
+    describe("addKeyframe", () => {
+        test("should add a new keyframe", () => {
+            const timeline = new Timeline([{ time: 0, value: { n: 0 } }, { time: 1, value: { n: 0 } }]);
+
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0 } });
+
+            timeline.addKeyframe({ time: 0.5, value: { n: 1 } });
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 1 } });
+        });
+    });
+
+    describe("removeKeyframe", () => {
+        test("should remove a keyframe", () => {
+            const timeline = new Timeline([{ time: 0, value: { n: 0 } },
+            { time: 0.5, value: { n: 1 } },
+            { time: 1, value: { n: 0 } }]);
+
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 1 } });
+
+            timeline.removeKeyframe(0.5);
+            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0 } });
         });
     });
 });

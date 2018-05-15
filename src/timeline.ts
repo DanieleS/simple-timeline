@@ -7,6 +7,9 @@ export class Timeline {
     constructor(
         private keyframes: IKeyframe[],
         private easingFunction: (x: number) => number = (x) => x) {
+        if (this.keyframes.length < 1) {
+            throw new Error("You should provide at least 1 keyframe");
+        }
         this.keyframes.sort(this.keyframeComparer);
         this.fullKeyframes = this.getFullKeyframes();
     }
@@ -16,6 +19,17 @@ export class Timeline {
         const [k1, k2] = this.getKeyframesCouple(perc);
         const finalPerc = this.normalizePerc(perc, k1.time, k2.time);
         return d3.interpolate(k1, k2)(this.easingFunction(finalPerc));
+    }
+
+    public addKeyframe(keyframe: IKeyframe): void {
+        this.keyframes.push(keyframe);
+        this.keyframes.sort(this.keyframeComparer);
+        this.fullKeyframes = this.getFullKeyframes();
+    }
+
+    public removeKeyframe(time: number): void {
+        this.keyframes = [...this.keyframes.filter((keyframe) => keyframe.time !== time)];
+        this.fullKeyframes = this.getFullKeyframes();
     }
 
     private keyframeComparer(k1: IKeyframe, k2: IKeyframe) {
