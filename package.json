@@ -6,7 +6,7 @@
         "interpolation"
     ],
     "description": "Simple utility for keyframes interpolation",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "main": "src/index.js",
     "author": "Davide Specchia <dnl.s.1992@gmail.com>",
     "license": "MIT",
