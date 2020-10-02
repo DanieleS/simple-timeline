@@ -1,12 +1,13 @@
 import * as d3 from "d3-interpolate";
 import { IKeyframe } from "./models/keyframe";
 
-export class Timeline {
-    private fullKeyframes: IKeyframe[];
+export class Timeline<T extends string | number> {
+    private fullKeyframes: IKeyframe<T>[];
 
     constructor(
-        private keyframes: IKeyframe[],
-        private easingFunction: (x: number) => number = (x) => x) {
+        private keyframes: IKeyframe<T>[],
+        private easingFunction: (x: number) => number = (x) => x
+    ) {
         if (this.keyframes.length < 1) {
             throw new Error("You should provide at least 1 keyframe");
         }
@@ -14,32 +15,39 @@ export class Timeline {
         this.fullKeyframes = this.getFullKeyframes();
     }
 
-    public getAt(perc: number): IKeyframe {
+    public getAt(perc: number): IKeyframe<T> {
         perc = this.boundPerc(perc);
         const [k1, k2] = this.getKeyframesCouple(perc);
         const finalPerc = this.normalizePerc(perc, k1.time, k2.time);
         return d3.interpolate(k1, k2)(this.easingFunction(finalPerc));
     }
 
-    public addKeyframe(keyframe: IKeyframe): void {
+    public addKeyframe(keyframe: IKeyframe<T>): void {
         this.keyframes.push(keyframe);
         this.keyframes.sort(this.keyframeComparer);
         this.fullKeyframes = this.getFullKeyframes();
     }
 
     public removeKeyframe(time: number): void {
-        this.keyframes = [...this.keyframes.filter((keyframe) => keyframe.time !== time)];
+        this.keyframes = [
+            ...this.keyframes.filter((keyframe) => keyframe.time !== time),
+        ];
         this.fullKeyframes = this.getFullKeyframes();
     }
 
-    private keyframeComparer(k1: IKeyframe, k2: IKeyframe) {
+    private keyframeComparer(k1: IKeyframe<T>, k2: IKeyframe<T>) {
         return k1.time - k2.time;
     }
 
     private getKeyframesCouple(perc: number) {
-        const startKeyframeIndex = this.fullKeyframes
-            .findIndex((keyframe, i, arr) => keyframe.time <= perc && arr[i + 1].time >= perc);
-        return [this.fullKeyframes[startKeyframeIndex], this.fullKeyframes[startKeyframeIndex + 1]];
+        const startKeyframeIndex = this.fullKeyframes.findIndex(
+            (keyframe, i, arr) =>
+                keyframe.time <= perc && arr[i + 1].time >= perc
+        );
+        return [
+            this.fullKeyframes[startKeyframeIndex],
+            this.fullKeyframes[startKeyframeIndex + 1],
+        ];
     }
 
     private boundPerc(p: number) {
@@ -60,20 +68,34 @@ export class Timeline {
             tempKeyframes.push({ time: 1, value: {} });
         }
         return tempKeyframes.map((keyframe, i) => {
-            const missingValues = this.getValuesDiff(Object.keys(keyframe.value), objValues);
-            const nextValues = missingValues.map((v) => this.getNextFrameWithValue(v, i, tempKeyframes));
-            const prevValues = missingValues.map((v) => this.getPrevFrameWithValue(v, i, tempKeyframes));
+            const missingValues = this.getValuesDiff(
+                Object.keys(keyframe.value),
+                objValues
+            );
+            const nextValues = missingValues.map((v) =>
+                this.getNextFrameWithValue(v, i, tempKeyframes)
+            );
+            const prevValues = missingValues.map((v) =>
+                this.getPrevFrameWithValue(v, i, tempKeyframes)
+            );
             for (let j = 0; j < missingValues.length; j++) {
                 const value = missingValues[j];
-                keyframe.value[value] =
-                    this.interpolateValues(prevValues[j], nextValues[j], keyframe.time, value);
+                keyframe.value[value] = this.interpolateValues(
+                    prevValues[j],
+                    nextValues[j],
+                    keyframe.time,
+                    value
+                );
             }
             return keyframe;
         });
     }
 
-    private getAllValues(keyframes: IKeyframe[]) {
-        const fullValueObj = keyframes.reduce((acc, elem) => Object.assign({}, acc, elem.value), {});
+    private getAllValues(keyframes: IKeyframe<T>[]) {
+        const fullValueObj = keyframes.reduce(
+            (acc, elem) => Object.assign({}, acc, elem.value),
+            {}
+        );
         return Object.keys(fullValueObj);
     }
 
@@ -81,7 +103,11 @@ export class Timeline {
         return target.filter((v) => values.indexOf(v) < 0);
     }
 
-    private getNextFrameWithValue(value: string, startIndex: number, keyframes: IKeyframe[]): IKeyframe {
+    private getNextFrameWithValue(
+        value: string,
+        startIndex: number,
+        keyframes: IKeyframe<T>[]
+    ): IKeyframe<T> {
         for (let i = startIndex; i < keyframes.length; i++) {
             if (typeof keyframes[i].value[value] !== "undefined") {
                 return keyframes[i];
@@ -90,7 +116,11 @@ export class Timeline {
         return this.getPrevFrameWithValue(value, startIndex, keyframes);
     }
 
-    private getPrevFrameWithValue(value: string, startIndex: number, keyframes: IKeyframe[]): IKeyframe {
+    private getPrevFrameWithValue(
+        value: string,
+        startIndex: number,
+        keyframes: IKeyframe<T>[]
+    ): IKeyframe<T> {
         for (let i = startIndex; i >= 0; i--) {
             if (typeof keyframes[i].value[value] !== "undefined") {
                 return keyframes[i];
@@ -99,10 +129,21 @@ export class Timeline {
         return this.getNextFrameWithValue(value, startIndex, keyframes);
     }
 
-    private interpolateValues(from: IKeyframe, to: IKeyframe, time: number, value: string): number | string {
+    private interpolateValues(
+        from: IKeyframe<T>,
+        to: IKeyframe<T>,
+        time: number,
+        value: string
+    ): T {
         if (from.value[value] === to.value[value]) {
             return from.value[value];
         }
-        return d3.interpolate(from.value[value], to.value[value])(this.normalizePerc(time, from.time, to.time));
+
+        const normalizedPerc = this.normalizePerc(time, from.time, to.time);
+
+        const fromValue = from.value[value];
+        const toValue = to.value[value];
+
+        return d3.interpolate(fromValue as any, toValue as any)(normalizedPerc);
     }
 }

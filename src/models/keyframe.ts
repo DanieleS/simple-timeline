@@ -1,7 +1,7 @@
-export interface IKeyframeValue {
-    [index: string]: string | number;
+export interface IKeyframeValue<T extends string | number> {
+    [index: string]: T;
 }
-export interface IKeyframe {
+export interface IKeyframe<T extends string | number> {
     time: number;
-    value: IKeyframeValue;
+    value: IKeyframeValue<T>;
 }
