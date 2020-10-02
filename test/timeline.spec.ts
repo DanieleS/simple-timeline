@@ -1,70 +1,84 @@
+import { IKeyframe } from "./../src/models/keyframe";
 import { Timeline } from "../src/index";
 
-const keyframeCouple = [{
-    time: 0, value: {
-        n: 0
-    }
-}, {
-    time: 1, value: {
-        n: 1
-    }
-}];
+const keyframeCouple = [
+    {
+        time: 0,
+        value: {
+            n: 0,
+        },
+    },
+    {
+        time: 1,
+        value: {
+            n: 1,
+        },
+    },
+];
 
-const incompleteKeyframes = [{
-    time: 0, value: {
-        n: 0
-    }
-},
-{
-    time: 0.25, value: {
-        k: 0
-    }
-},
-{
-    time: 0.75, value: {
-        k: 1
-    }
-},
-{
-    time: 1, value: {
-        n: 1,
-    }
-}];
+const incompleteKeyframes: IKeyframe<number>[] = [
+    {
+        time: 0,
+        value: {
+            n: 0,
+        },
+    },
+    {
+        time: 0.25,
+        value: {
+            k: 0,
+        },
+    },
+    {
+        time: 0.75,
+        value: {
+            k: 1,
+        },
+    },
+    {
+        time: 1,
+        value: {
+            n: 1,
+        },
+    },
+];
 
 const notFullKeyframes = [
     {
         time: 0.2,
         value: {
-            n: 1
-        }
+            n: 1,
+        },
     },
     {
         time: 0.8,
         value: {
-            n: 0
-        }
-    }
+            n: 0,
+        },
+    },
 ];
 
 const wrongOrderKeyframes = [
     {
         time: 1,
         value: {
-            n: 1
-        }
+            n: 1,
+        },
     },
     {
         time: 0,
         value: {
-            n: 0
-        }
-    }
+            n: 0,
+        },
+    },
 ];
 
 describe("Timeline", () => {
     describe("constructor", () => {
         test("should be inited with at least 1 keyframe", () => {
-            expect(() => new Timeline([])).toThrowError("You should provide at least 1 keyframe");
+            expect(() => new Timeline([])).toThrowError(
+                "You should provide at least 1 keyframe"
+            );
             expect(() => new Timeline([{ time: 0, value: {} }])).not.toThrow();
         });
     });
@@ -75,7 +89,10 @@ describe("Timeline", () => {
 
             expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0 } });
             expect(timeline.getAt(1)).toEqual({ time: 1, value: { n: 1 } });
-            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5 } });
+            expect(timeline.getAt(0.5)).toEqual({
+                time: 0.5,
+                value: { n: 0.5 },
+            });
         });
 
         test("should get the first keyframe if the time is lesser then it", () => {
@@ -103,15 +120,24 @@ describe("Timeline", () => {
         test("should get the complete keyframe even if the provided ones misses some value", () => {
             const timeline = new Timeline(incompleteKeyframes);
 
-            expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 0, k: 0 } });
-            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5, k: 0.5 } });
+            expect(timeline.getAt(0)).toEqual({
+                time: 0,
+                value: { n: 0, k: 0 },
+            });
+            expect(timeline.getAt(0.5)).toEqual({
+                time: 0.5,
+                value: { n: 0.5, k: 0.5 },
+            });
         });
 
         test("should get the keyframe even if the privided ones don't cover the full range", () => {
             const timeline = new Timeline(notFullKeyframes);
 
             expect(timeline.getAt(0)).toEqual({ time: 0, value: { n: 1 } });
-            expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0.5 } });
+            expect(timeline.getAt(0.5)).toEqual({
+                time: 0.5,
+                value: { n: 0.5 },
+            });
             expect(timeline.getAt(1)).toEqual({ time: 1, value: { n: 0 } });
         });
 
@@ -125,7 +151,10 @@ describe("Timeline", () => {
 
     describe("addKeyframe", () => {
         test("should add a new keyframe", () => {
-            const timeline = new Timeline([{ time: 0, value: { n: 0 } }, { time: 1, value: { n: 0 } }]);
+            const timeline = new Timeline<number>([
+                { time: 0, value: { n: 0 } },
+                { time: 1, value: { n: 0 } },
+            ]);
 
             expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 0 } });
 
@@ -136,9 +165,11 @@ describe("Timeline", () => {
 
     describe("removeKeyframe", () => {
         test("should remove a keyframe", () => {
-            const timeline = new Timeline([{ time: 0, value: { n: 0 } },
-            { time: 0.5, value: { n: 1 } },
-            { time: 1, value: { n: 0 } }]);
+            const timeline = new Timeline([
+                { time: 0, value: { n: 0 } },
+                { time: 0.5, value: { n: 1 } },
+                { time: 1, value: { n: 0 } },
+            ]);
 
             expect(timeline.getAt(0.5)).toEqual({ time: 0.5, value: { n: 1 } });
 
